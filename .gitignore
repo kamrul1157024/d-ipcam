@@ -50,7 +50,7 @@ htmlcov/
 
 # Logs
 *.log
-ainanny.log
+d-ipcam.log
 
 # Database
 *.db
@@ -61,7 +61,7 @@ cameras.db
 *.dmg
 
 # User data
-~/.ainanny/
+~/.d_ipcam/
 
 # Test files
 test_*.py

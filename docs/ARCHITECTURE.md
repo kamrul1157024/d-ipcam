@@ -1,8 +1,8 @@
-# AINanny - Technical Architecture
+# D-IPCam - Technical Architecture
 
 ## Overview
 
-AINanny follows a **layered architecture** pattern with strict separation of concerns between UI, Services, and Data layers. This design enables:
+D-IPCam follows a **layered architecture** pattern with strict separation of concerns between UI, Services, and Data layers. This design enables:
 
 - **Testability** - Each layer can be tested independently
 - **Maintainability** - Changes in one layer don't cascade to others
@@ -71,7 +71,7 @@ AINanny follows a **layered architecture** pattern with strict separation of con
 
 ### 1. Presentation Layer (UI)
 
-**Location:** `ainanny/ui/`
+**Location:** `d_ipcam/ui/`
 
 **Responsibility:** Display data and capture user interactions. **No business logic.**
 
@@ -91,7 +91,7 @@ AINanny follows a **layered architecture** pattern with strict separation of con
 
 ### 2. Service Layer (Business Logic)
 
-**Location:** `ainanny/services/`
+**Location:** `d_ipcam/services/`
 
 **Responsibility:** Orchestrate business operations, enforce rules, coordinate between UI and Data.
 
@@ -110,7 +110,7 @@ AINanny follows a **layered architecture** pattern with strict separation of con
 
 ### 3. Data Layer (Persistence & I/O)
 
-**Location:** `ainanny/data/`
+**Location:** `d_ipcam/data/`
 
 **Responsibility:** Data persistence, external I/O, data models.
 
@@ -131,12 +131,12 @@ AINanny follows a **layered architecture** pattern with strict separation of con
 ## Project Structure
 
 ```
-~/ainanny/
+~/d-ipcam/
 ├── docs/
 │   ├── ARCHITECTURE.md          # This document
 │   └── API.md                   # Service API documentation
 │
-├── ainanny/
+├── d_ipcam/
 │   ├── __init__.py
 │   ├── main.py                  # Entry point
 │   ├── app.py                   # QApplication setup
@@ -334,13 +334,13 @@ The `MLPipelineService` will:
 
 ## Configuration
 
-**Location:** `ainanny/core/config.py`
+**Location:** `d_ipcam/core/config.py`
 
 ```python
 @dataclass
 class AppConfig:
     # Database
-    db_path: str = "~/.ainanny/cameras.db"
+    db_path: str = "~/.d_ipcam/cameras.db"
 
     # Network scanning
     scan_ports: list[int] = (37777, 554, 80)

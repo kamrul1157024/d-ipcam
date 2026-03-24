@@ -1,4 +1,4 @@
-"""AINanny application entry point."""
+"""D-IPCam application entry point."""
 
 import sys
 
@@ -12,7 +12,7 @@ from d_ipcam.ui import MainWindow
 
 
 def main() -> int:
-    """Run the AINanny application.
+    """Run the D-IPCam application.
 
     Returns:
         Exit code
@@ -23,7 +23,7 @@ def main() -> int:
     )
 
     app = QApplication(sys.argv)
-    app.setApplicationName("AINanny")
+    app.setApplicationName("D-IPCam")
     app.setApplicationVersion("0.1.0")
 
     # Get config

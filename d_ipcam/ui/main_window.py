@@ -58,7 +58,7 @@ class MainWindow(QMainWindow):
 
     def _setup_ui(self) -> None:
         """Set up the UI components."""
-        self.setWindowTitle("AINanny - Camera Viewer")
+        self.setWindowTitle("D-IPCam - Camera Viewer")
         self.setMinimumSize(1024, 768)
         self.resize(1280, 720)
 
