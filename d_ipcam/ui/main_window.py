@@ -13,14 +13,16 @@ from PyQt6.QtWidgets import (
 )
 from PyQt6.QtGui import QAction
 
+from d_ipcam import __version__
 from d_ipcam.data.models import Camera
-from d_ipcam.services import CameraService, DiscoveryService, StreamService, AudioService, TalkbackService
+from d_ipcam.services import CameraService, DiscoveryService, StreamService, AudioService, TalkbackService, UpdateService, ReleaseInfo
 from d_ipcam.services.discovery_service import DiscoveredCamera
 from .widgets import (
     CameraGrid,
     CameraListWidget,
     AddCameraDialog,
     DiscoveryDialog,
+    UpdateDialog,
 )
 
 
@@ -52,9 +54,18 @@ class MainWindow(QMainWindow):
         self.audio_service = audio_service
         self.talkback_service = talkback_service
 
+        # Update service
+        self.update_service = UpdateService(__version__)
+        self.update_service.update_available.connect(self._on_update_available)
+        self.update_service.no_update.connect(self._on_no_update)
+        self.update_service.check_failed.connect(self._on_update_check_failed)
+
         self._setup_ui()
         self._connect_signals()
         self._load_cameras()
+
+        # Check for updates on startup (silent)
+        self.update_service.check_for_updates()
 
     def _setup_ui(self) -> None:
         """Set up the UI components."""
@@ -145,6 +156,13 @@ class MainWindow(QMainWindow):
         stop_action = QAction("Stop All", self)
         stop_action.triggered.connect(self._stop_all_streams)
         toolbar.addAction(stop_action)
+
+        toolbar.addSeparator()
+
+        # Check for updates action
+        self.update_action = QAction("Check for Updates", self)
+        self.update_action.triggered.connect(self._check_for_updates)
+        toolbar.addAction(self.update_action)
 
         # Spacer
         spacer = QWidget()
@@ -293,6 +311,61 @@ class MainWindow(QMainWindow):
             if camera.id:
                 self.camera_grid.remove_camera(camera.id)
                 self.camera_service.delete_camera(camera.id)
+
+    def _check_for_updates(self) -> None:
+        """Manually check for updates."""
+        self.update_action.setEnabled(False)
+        self.update_action.setText("Checking...")
+        self._manual_update_check = True
+        self.update_service.check_for_updates()
+
+    def _on_update_available(self, release: ReleaseInfo) -> None:
+        """Handle update available signal.
+
+        Args:
+            release: Release info
+        """
+        self.update_action.setEnabled(True)
+        self.update_action.setText("Check for Updates")
+
+        dialog = UpdateDialog(release, __version__, parent=self)
+        dialog.exec()
+
+    def _on_no_update(self, current_version: str) -> None:
+        """Handle no update signal.
+
+        Args:
+            current_version: Current version
+        """
+        self.update_action.setEnabled(True)
+        self.update_action.setText("Check for Updates")
+
+        # Only show message if manually triggered
+        if getattr(self, '_manual_update_check', False):
+            self._manual_update_check = False
+            QMessageBox.information(
+                self,
+                "No Updates",
+                f"You're running the latest version (v{current_version})."
+            )
+
+    def _on_update_check_failed(self, error: str) -> None:
+        """Handle update check failed signal.
+
+        Args:
+            error: Error message
+        """
+        self.update_action.setEnabled(True)
+        self.update_action.setText("Check for Updates")
+
+        # Only show message if manually triggered
+        if getattr(self, '_manual_update_check', False):
+            self._manual_update_check = False
+            QMessageBox.warning(
+                self,
+                "Update Check Failed",
+                f"Could not check for updates: {error}"
+            )
 
     def closeEvent(self, event) -> None:
         """Handle window close event."""

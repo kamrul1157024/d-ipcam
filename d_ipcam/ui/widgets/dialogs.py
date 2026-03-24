@@ -1,5 +1,7 @@
 """Dialog widgets for camera management."""
 
+import webbrowser
+
 from PyQt6.QtCore import Qt, pyqtSignal
 from PyQt6.QtWidgets import (
     QDialog,
@@ -16,11 +18,12 @@ from PyQt6.QtWidgets import (
     QCheckBox,
     QComboBox,
     QGroupBox,
+    QTextEdit,
 )
 
 from d_ipcam.data.models import Camera
 from d_ipcam.core.constants import StreamQuality
-from d_ipcam.services import DiscoveryService
+from d_ipcam.services import DiscoveryService, ReleaseInfo
 from d_ipcam.services.discovery_service import DiscoveredCamera
 
 
@@ -443,3 +446,135 @@ class DiscoveryDialog(QDialog):
             index = item.data(Qt.ItemDataRole.UserRole)
             if 0 <= index < len(self._discovered):
                 self.camera_selected.emit(self._discovered[index])
+
+
+class UpdateDialog(QDialog):
+    """Dialog for showing available updates."""
+
+    def __init__(
+        self,
+        release: ReleaseInfo,
+        current_version: str,
+        parent=None,
+    ) -> None:
+        """Initialize update dialog.
+
+        Args:
+            release: Release info from GitHub
+            current_version: Current app version
+            parent: Parent widget
+        """
+        super().__init__(parent)
+        self.release = release
+        self.current_version = current_version
+
+        self._setup_ui()
+
+    def _setup_ui(self) -> None:
+        """Set up the UI components."""
+        self.setWindowTitle("Update Available")
+        self.setMinimumSize(500, 400)
+        self.setStyleSheet("""
+            QDialog {
+                background-color: #2d2d2d;
+            }
+            QLabel {
+                color: #fff;
+            }
+            QTextEdit {
+                background-color: #3d3d3d;
+                color: #fff;
+                border: 1px solid #555;
+                border-radius: 4px;
+                padding: 8px;
+            }
+        """)
+
+        layout = QVBoxLayout(self)
+        layout.setSpacing(16)
+
+        # Header with icon
+        header = QLabel("A new version of D-IPCam is available!")
+        header.setStyleSheet("font-size: 16px; font-weight: bold; color: #0078d4;")
+        layout.addWidget(header)
+
+        # Version info
+        version_layout = QHBoxLayout()
+
+        current_label = QLabel(f"Current version: {self.current_version}")
+        current_label.setStyleSheet("color: #aaa;")
+        version_layout.addWidget(current_label)
+
+        version_layout.addStretch()
+
+        new_label = QLabel(f"New version: {self.release.version}")
+        new_label.setStyleSheet("color: #28a745; font-weight: bold;")
+        version_layout.addWidget(new_label)
+
+        layout.addLayout(version_layout)
+
+        # Release name
+        if self.release.name:
+            name_label = QLabel(self.release.name)
+            name_label.setStyleSheet("font-size: 14px; color: #fff;")
+            layout.addWidget(name_label)
+
+        # Release notes
+        notes_label = QLabel("Release Notes:")
+        notes_label.setStyleSheet("color: #aaa;")
+        layout.addWidget(notes_label)
+
+        self.notes_text = QTextEdit()
+        self.notes_text.setReadOnly(True)
+        self.notes_text.setPlainText(self.release.body or "No release notes available.")
+        layout.addWidget(self.notes_text)
+
+        # Buttons
+        button_layout = QHBoxLayout()
+
+        skip_btn = QPushButton("Skip This Version")
+        skip_btn.setStyleSheet(self._button_style("#666666"))
+        skip_btn.clicked.connect(self.reject)
+        button_layout.addWidget(skip_btn)
+
+        button_layout.addStretch()
+
+        if self.release.download_url:
+            download_btn = QPushButton("Download DMG")
+            download_btn.setStyleSheet(self._button_style("#28a745"))
+            download_btn.clicked.connect(self._download)
+            button_layout.addWidget(download_btn)
+
+        view_btn = QPushButton("View on GitHub")
+        view_btn.setStyleSheet(self._button_style("#0078d4"))
+        view_btn.clicked.connect(self._view_release)
+        button_layout.addWidget(view_btn)
+
+        layout.addLayout(button_layout)
+
+    def _button_style(self, color: str) -> str:
+        """Get button stylesheet."""
+        return f"""
+            QPushButton {{
+                background-color: {color};
+                color: white;
+                border: none;
+                padding: 10px 20px;
+                border-radius: 4px;
+                font-weight: bold;
+            }}
+            QPushButton:hover {{
+                background-color: {color}cc;
+            }}
+        """
+
+    def _download(self) -> None:
+        """Open download URL in browser."""
+        if self.release.download_url:
+            webbrowser.open(self.release.download_url)
+            self.accept()
+
+    def _view_release(self) -> None:
+        """Open release page in browser."""
+        webbrowser.open(self.release.html_url)
+        self.accept()

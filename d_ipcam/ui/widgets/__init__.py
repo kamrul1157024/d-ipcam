@@ -3,7 +3,7 @@
 from .camera_view import CameraView
 from .camera_grid import CameraGrid
 from .camera_list import CameraListWidget
-from .dialogs import AddCameraDialog, DiscoveryDialog
+from .dialogs import AddCameraDialog, DiscoveryDialog, UpdateDialog
 
 __all__ = [
     "CameraView",
@@ -11,4 +11,5 @@ __all__ = [
     "CameraListWidget",
     "AddCameraDialog",
     "DiscoveryDialog",
+    "UpdateDialog",
 ]

@@ -5,6 +5,7 @@ from .discovery_service import DiscoveryService
 from .stream_service import StreamService
 from .audio_service import AudioService, TalkMode
 from .talkback_service import TalkbackService
+from .update_service import UpdateService, ReleaseInfo
 
 __all__ = [
     "CameraService",
@@ -13,4 +14,6 @@ __all__ = [
     "AudioService",
     "TalkMode",
     "TalkbackService",
+    "UpdateService",
+    "ReleaseInfo",
 ]
